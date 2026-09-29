@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – Model Performance{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-text">
+    <h1><i class="fas fa-chart-line"></i> Model Dashboard</h1>
+    <p>Performance metrics and visualisations for the trained Random Forest models.</p>
+  </div>
+</section>
+
+<!-- ── Metrics cards ── -->
+{% if metrics %}
+<section class="metrics-grid">
+
+  <div class="metric-card">
+    <div class="metric-icon" style="background:#4C72B0"><i class="fas fa-ruler"></i></div>
+    <div class="metric-info">
+      <div class="metric-value">{{ metrics.get('MAE', 'N/A') }}</div>
+      <div class="metric-label">Mean Absolute Error</div>
+      <div class="metric-sub">Lower is better</div>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-icon" style="background:#DD8452"><i class="fas fa-chart-area"></i></div>
+    <div class="metric-info">
+      <div class="metric-value">{{ metrics.get('RMSE', 'N/A') }}</div>
+      <div class="metric-label">RMSE</div>
+      <div class="metric-sub">Root Mean Squared Error</div>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-icon" style="background:#55A868"><i class="fas fa-percentage"></i></div>
+    <div class="metric-info">
+      <div class="metric-value">{{ metrics.get('R2', 'N/A') }}</div>
+      <div class="metric-label">R² Score</div>
+      <div class="metric-sub">Regressor fit quality</div>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-icon" style="background:#C44E52"><i class="fas fa-bullseye"></i></div>
+    <div class="metric-info">
+      <div class="metric-value">{{ metrics.get('Accuracy', 'N/A') }}%</div>
+      <div class="metric-label">Classifier Accuracy</div>
+      <div class="metric-sub">AQI Category prediction</div>
+    </div>
+  </div>
+
+</section>
+{% else %}
+<div class="alert alert-warning">
+  <i class="fas fa-exclamation-triangle"></i>
+  No metrics found. Run <code>python train_model.py</code> to train the models first.
+</div>
+{% endif %}
+
+<!-- ── Plots ── -->
+{% if plots_exist %}
+<section class="plots-section">
+  <h2><i class="fas fa-images"></i> Visualisations</h2>
+
+  <div class="plots-grid">
+
+    <div class="plot-card">
+      <h3>AQI Distribution</h3>
+      <img src="{{ url_for('static', filename='plots/aqi_distribution.png') }}" alt="AQI Distribution" />
+    </div>
+
+    <div class="plot-card">
+      <h3>Feature Importance</h3>
+      <img src="{{ url_for('static', filename='plots/feature_importance.png') }}" alt="Feature Importance" />
+    </div>
+
+    <div class="plot-card">
+      <h3>Actual vs Predicted AQI</h3>
+      <img src="{{ url_for('static', filename='plots/actual_vs_predicted.png') }}" alt="Actual vs Predicted" />
+    </div>
+
+    <div class="plot-card">
+      <h3>Confusion Matrix</h3>
+      <img src="{{ url_for('static', filename='plots/confusion_matrix.png') }}" alt="Confusion Matrix" />
+    </div>
+
+    <div class="plot-card full-width">
+      <h3>Correlation Heatmap</h3>
+      <img src="{{ url_for('static', filename='plots/correlation_heatmap.png') }}" alt="Correlation Heatmap" />
+    </div>
+
+  </div>
+</section>
+{% else %}
+<div class="alert alert-info">
+  <i class="fas fa-info-circle"></i>
+  Plots will appear here after running <code>python train_model.py</code>.
+</div>
+{% endif %}
+
+<!-- ── AQI Scale reference ── -->
+<section class="card aqi-scale-card">
+  <h2><i class="fas fa-palette"></i> AQI Scale Reference</h2>
+  <div class="aqi-scale">
+    <div class="scale-item" style="background:#2ecc71">
+      <strong>0–50</strong><br/>Good
+    </div>
+    <div class="scale-item" style="background:#f1c40f;color:#333">
+      <strong>51–100</strong><br/>Moderate
+    </div>
+    <div class="scale-item" style="background:#e67e22">
+      <strong>101–150</strong><br/>Unhealthy (Sensitive)
+    </div>
+    <div class="scale-item" style="background:#e74c3c">
+      <strong>151–200</strong><br/>Unhealthy
+    </div>
+    <div class="scale-item" style="background:#8e44ad">
+      <strong>201–300</strong><br/>Very Unhealthy
+    </div>
+    <div class="scale-item" style="background:#2c3e50">
+      <strong>301–500</strong><br/>Hazardous
+    </div>
+  </div>
+</section>
+{% endblock %}

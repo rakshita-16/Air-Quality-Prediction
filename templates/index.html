@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Air Quality Predictor – Predict AQI{% endblock %}
+
+{% block content %}
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero-text">
+    <h1><i class="fas fa-cloud-sun"></i> Air Quality Prediction</h1>
+    <p>Enter real-time pollutant concentrations to instantly predict the Air Quality Index (AQI) and get personalised health recommendations.</p>
+  </div>
+</section>
+
+{% if not models_ready %}
+<div class="alert alert-warning">
+  <i class="fas fa-exclamation-triangle"></i>
+  <strong>Models not trained yet.</strong> {{ error_msg }}
+  <br/>Run <code>python train_model.py</code> in the project folder, then refresh this page.
+</div>
+{% endif %}
+
+<!-- ── Input Form ── -->
+<section class="card form-card">
+  <h2><i class="fas fa-sliders-h"></i> Enter Pollutant Values</h2>
+
+  <form id="predictForm">
+    <div class="form-grid">
+
+      <div class="input-group">
+        <label for="PM2.5">PM2.5 <span class="unit">(µg/m³)</span></label>
+        <input type="number" id="PM2.5" name="PM2.5" step="0.01" min="0" max="500" placeholder="e.g. 35.5" required />
+        <span class="hint">Fine particulate matter ≤ 2.5 µm</span>
+      </div>
+
+      <div class="input-group">
+        <label for="PM10">PM10 <span class="unit">(µg/m³)</span></label>
+        <input type="number" id="PM10" name="PM10" step="0.01" min="0" max="600" placeholder="e.g. 75.0" required />
+        <span class="hint">Coarse particulate matter ≤ 10 µm</span>
+      </div>
+
+      <div class="input-group">
+        <label for="NO2">NO₂ <span class="unit">(µg/m³)</span></label>
+        <input type="number" id="NO2" name="NO2" step="0.01" min="0" max="300" placeholder="e.g. 40.0" required />
+        <span class="hint">Nitrogen dioxide</span>
+      </div>
+
+      <div class="input-group">
+        <label for="SO2">SO₂ <span class="unit">(µg/m³)</span></label>
+        <input type="number" id="SO2" name="SO2" step="0.01" min="0" max="200" placeholder="e.g. 20.0" required />
+        <span class="hint">Sulphur dioxide</span>
+      </div>
+
+      <div class="input-group">
+        <label for="CO">CO <span class="unit">(mg/m³)</span></label>
+        <input type="number" id="CO" name="CO" step="0.001" min="0" max="15" placeholder="e.g. 1.2" required />
+        <span class="hint">Carbon monoxide</span>
+      </div>
+
+      <div class="input-group">
+        <label for="O3">O₃ <span class="unit">(µg/m³)</span></label>
+        <input type="number" id="O3" name="O3" step="0.01" min="0" max="300" placeholder="e.g. 60.0" required />
+        <span class="hint">Ground-level ozone</span>
+      </div>
+
+      <div class="input-group">
+        <label for="Temperature">Temperature <span class="unit">(°C)</span></label>
+        <input type="number" id="Temperature" name="Temperature" step="0.1" min="-20" max="50" placeholder="e.g. 28.0" required />
+        <span class="hint">Ambient temperature</span>
+      </div>
+
+      <div class="input-group">
+        <label for="Humidity">Humidity <span class="unit">(%)</span></label>
+        <input type="number" id="Humidity" name="Humidity" step="0.1" min="0" max="100" placeholder="e.g. 65.0" required />
+        <span class="hint">Relative humidity</span>
+      </div>
+
+      <div class="input-group">
+        <label for="WindSpeed">Wind Speed <span class="unit">(m/s)</span></label>
+        <input type="number" id="WindSpeed" name="WindSpeed" step="0.01" min="0" max="30" placeholder="e.g. 3.5" required />
+        <span class="hint">Wind speed at measurement site</span>
+      </div>
+
+    </div><!-- /form-grid -->
+
+    <div class="form-actions">
+      <button type="button" id="fillSample" class="btn btn-secondary">
+        <i class="fas fa-flask"></i> Fill Sample Values
+      </button>
+      <button type="submit" class="btn btn-primary" {% if not models_ready %}disabled{% endif %}>
+        <i class="fas fa-search"></i> Predict AQI
+      </button>
+    </div>
+  </form>
+</section>
+
+<!-- ── Result Panel (hidden until prediction) ── -->
+<section class="card result-card" id="resultPanel" style="display:none;">
+  <h2><i class="fas fa-poll"></i> Prediction Result</h2>
+
+  <div class="result-main">
+    <div class="aqi-gauge" id="aqiGauge">
+      <div class="aqi-value" id="aqiValue">--</div>
+      <div class="aqi-label">AQI Score</div>
+    </div>
+    <div class="result-details">
+      <div class="result-category" id="resultCategory">--</div>
+      <div class="result-desc"    id="resultDesc">--</div>
+      <div class="confidence-bar-wrap">
+        <span>Model Confidence</span>
+        <div class="confidence-bar">
+          <div class="confidence-fill" id="confidenceFill"></div>
+        </div>
+        <span id="confidenceLabel">--%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="recommendations">
+    <h3><i class="fas fa-heartbeat"></i> Health Recommendations</h3>
+    <ul id="recList"></ul>
+  </div>
+</section>
+
+<!-- ── Loading spinner ── -->
+<div class="spinner-overlay" id="spinnerOverlay" style="display:none;">
+  <div class="spinner"></div>
+  <p>Analysing air quality …</p>
+</div>
+
+{% endblock %}
